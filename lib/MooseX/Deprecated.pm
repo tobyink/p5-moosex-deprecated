@@ -234,6 +234,9 @@ ironically not (what Moose calls) attributes.
 L<Devel::Deprecation> has some pretty nice features, but is more manual
 than I'd like, and again only deals with methods.
 
+Not to be confused with L<Moose::Deprecated> which can be used to
+manage warnings issued by Moose itself.
+
 L<http://en.wikipedia.org/wiki/Self-deprecation>.
 
 =head1 AUTHOR
