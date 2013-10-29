@@ -1,0 +1,22 @@
+# This file contains general metadata about the project.
+
+@prefix : <http://usefulinc.com/ns/doap#>.
+
+`MooseX-Deprecated`
+	:programming-language "Perl" ;
+	:shortdesc            "mark attributes and methods as deprecated";
+	:homepage             <https://metacpan.org/release/MooseX-Deprecated>;
+	:download-page        <https://metacpan.org/release/MooseX-Deprecated>;
+	:bug-database         <http://rt.cpan.org/Dist/Display.html?Queue=MooseX-Deprecated>;
+	:repository           [ a :GitRepository; :browse <https://github.com/tobyink/p5-moosex-deprecated> ];
+	:created              2013-10-29;
+	:license              <http://dev.perl.org/licenses/>;
+	:maintainer           cpan:TOBYINK;
+	:developer            cpan:TOBYINK.
+
+`MooseX-Deprecated`
+	rdfs:seeAlso          <http://stackoverflow.com/questions/19609765/how-do-i-deprecate-an-attribute-in-a-moose-based-class/19612773#19612773>.
+
+<http://dev.perl.org/licenses/>
+	dc:title  "the same terms as the perl 5 programming language system itself".
+
