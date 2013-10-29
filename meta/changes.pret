@@ -10,3 +10,10 @@
 		item "Saner technique for skipping internals when issuing warnings (and also when detecting the currently enabled warning categories)."^^Change;
 	].
 
+`MooseX-Deprecated 0.003 cpan:TOBYINK`
+	issued  2013-10-29;
+	changeset [
+		item "Stop relying on warnings::fatal_enabled() function which doesn't exist on Perl < 5.12."^^Bugfix;
+		item "Make the undocumented E* functions handle the sprintf stuff within themselves."^^Change;
+	].
+
