@@ -16,9 +16,9 @@ our @CARP_NOT = qw(
 	Class::MOP::Method::Wrapped
 );
 
-sub EDEPRECATED () { '%s is a deprecated %s' }
-sub ENOOP       () { '%s with no list of attributes or methods' }
-sub ENOATTR     () { 'Attribute %s does not exist in %s so cannot be deprecated' }
+sub EDEPRECATED { sprintf '%s is a deprecated %s', @_ }
+sub ENOOP       { sprintf '%s with no list of attributes or methods', @_ }
+sub ENOATTR     { sprintf 'Attribute %s does not exist in %s so cannot be deprecated', @_ }
 
 parameter attributes => (
 	is      => 'ro',
@@ -44,11 +44,7 @@ my $deprecated = sub
 	/\A(Moose|Class..MOP|Test::Warnings|MooseX::Deprecated|Eval::Closure)\b/ && ++$Carp::Internal{$_}
 		while defined($_ = caller $i++);
 	
-	croak(sprintf EDEPRECATED, $name, $type)
-		if warnings::fatal_enabled("deprecated");
-	
-	carp(sprintf EDEPRECATED, $name, $type)
-		if warnings::enabled("deprecated");
+	warnings::warnif deprecated => EDEPRECATED($name, $type);
 };
 
 role {
@@ -58,14 +54,14 @@ role {
 	my @methods = @{ $p->methods };
 	my %init_args;
 	
-	@attribs or @methods or croak(sprintf ENOOP, __PACKAGE__);
+	@attribs or @methods or croak ENOOP(__PACKAGE__);
 	
 	my $meta = Moose::Util::find_meta( $args{consumer}->name );
 	
 	for my $attrib (@attribs)
 	{
 		my $attr = $meta->find_attribute_by_name($attrib)
-			or croak(sprintf ENOATTR, $attrib, $meta->name);
+			or croak ENOATTR($attrib, $meta->name);
 		
 		$init_args{ $attr->init_arg } = 1 if $attr->has_init_arg;
 		
