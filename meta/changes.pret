@@ -4,3 +4,9 @@
 	issued  2013-10-29;
 	label   "Initial release".
 
+`MooseX-Deprecated 0.002 cpan:TOBYINK`
+	issued  2013-10-29;
+	changeset [
+		item "Saner technique for skipping internals when issuing warnings (and also when detecting the currently enabled warning categories)."^^Change;
+	].
+
