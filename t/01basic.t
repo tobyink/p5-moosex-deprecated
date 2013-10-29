@@ -57,56 +57,66 @@ use Test::Fatal;
 
 my $imm = '';
 
+sub w_qr {
+	my $str = quotemeta($_[0]);
+	
+	$str .= sprintf(" at 01basic\.t line (%d|%d|%d)", $_[1]-1 .. $_[1]+1 )  # allow off-by-one
+		if defined($_[1]);
+	
+	return qr/$str/;
+}
+
+#line 70 "01basic.t"
 with_immutable
 {
 	like(
 		warning { 'Goose'->new(feathers => 'FeatherSet'->new) },
-		qr/\Afeathers is a deprecated argument/,
+		w_qr('feathers is a deprecated argument', 73),
 		"warning when passing deprecated attribute to the constructor$imm",
 	);
 	
 	my $g = 'Goose'->new;
 	
 	like(
-		warning { ok($g->feathers->isa('FeatherSet'), "reader works") },
-		qr{\Afeathers is a deprecated reader},
+		warning { ok($g->feathers->isa('FeatherSet'), "reader works$imm") },
+		w_qr('feathers is a deprecated reader', 81),
 		"warning when using reader$imm",
 	);
 	
 	like(
-		warning { ok($g->has_feathers, "predicate works") },
-		qr{\Ahas_feathers is a deprecated predicate},
+		warning { ok($g->has_feathers, "predicate works$imm") },
+		w_qr('has_feathers is a deprecated predicate', 87),
 		"warning when using predicate$imm",
 	);
 	
 	like(
-		warning { $g->_clear_feathers; no warnings; ok(!$g->has_feathers, "clearer works") },
-		qr{\A_clear_feathers is a deprecated clearer},
+		warning { $g->_clear_feathers; no warnings; ok(!$g->has_feathers, "clearer works$imm") },
+		w_qr('_clear_feathers is a deprecated clearer', 93),
 		"warning when using clearer$imm",
 	);
 	
 	like(
-		warning { $g->_set_feathers('FeatherSet'->new); no warnings; ok($g->has_feathers, "writer works") },
-		qr{\A_set_feathers is a deprecated writer},
+		warning { $g->_set_feathers('FeatherSet'->new); no warnings; ok($g->has_feathers, "writer works$imm") },
+		w_qr('_set_feathers is a deprecated writer', 99),
 		"warning when using writer$imm",
 	);
 	
-	my @w_ruffle = warnings { is($g->ruffle_feathers, 42, 'delegated method works'); };
+	my @w_ruffle = warnings { is($g->ruffle_feathers, 42, "delegated method works$imm"); };
 	like(
 		$w_ruffle[0],
-		qr{\Aruffle_feathers is a deprecated method},
+		w_qr('ruffle_feathers is a deprecated method', 104),
 		"warning when using deprecated delegated method$imm",
 	);
 	
 	like(
 		$w_ruffle[1],
-		qr{\Afeathers is a deprecated reader},
+		w_qr('feathers is a deprecated reader', 104),
 		"tag-along warning from reader when using deprecated delegated method$imm",
 	);
 	
 	like(
-		warning { is($g->talk, 'honk!', 'method works') },
-		qr{\Atalk is a deprecated method},
+		warning { is($g->talk, 'honk!', "method works$imm") },
+		w_qr('talk is a deprecated method', 118),
 		"warning from deprecated method$imm",
 	);
 	
@@ -117,7 +127,7 @@ with_immutable
 		$g2->talk;
 	};
 	
-	is_deeply(\@w_stuff, [], 'warnings can be disabled');
+	is_deeply(\@w_stuff, [], "warnings can be disabled$imm");
 	
 	my $e_construct;
 	warning {
@@ -126,23 +136,19 @@ with_immutable
 			'Goose'->new(feathers => 'FeatherSet'->new);
 		};
 	};
-	
-	{
-		local $TODO = $imm ? undef : "cannot figure out warnings categories at real call site for mutable class";
-		like($e_construct||'', qr{\Afeathers is a deprecated argument}, 'warning from constructor can be fatalized');
-	}
+	like($e_construct||'', w_qr('feathers is a deprecated argument', 136), "warning from constructor can be fatalized$imm");
 	
 	my $e_access = exception {
 		use warnings FATAL => "deprecated";
 		$g->feathers;
 	};
-	like($e_access, qr{\Afeathers is a deprecated reader}, 'warning from accessor can be fatalized');
+	like($e_access, w_qr('feathers is a deprecated reader', 143), "warning from accessor can be fatalized$imm");
 	
 	my $e_method = exception {
 		use warnings FATAL => "deprecated";
 		$g->talk;
 	};
-	like($e_method, qr{\Atalk is a deprecated method}, 'warning from method can be fatalized');
+	like($e_method, w_qr('talk is a deprecated method', 149), "warning from method can be fatalized$imm");
 	
 	$imm = " (immutable class)";
 } qw( FeatherSet Goose );

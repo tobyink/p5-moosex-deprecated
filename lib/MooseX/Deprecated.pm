@@ -38,11 +38,11 @@ my $deprecated = sub
 	my $type = shift;
 	my $name = shift;
 	
-	# Don't let the deprecation warning be reported to an
-	# inlined constructor; it should be reported to the
-	# constructor's caller.
-	local $Carp::CarpLevel = $Carp::CarpLevel + 1
-		if $type eq 'argument';
+	# Skip over any Moose internals
+	local %Carp::Internal = %Carp::Internal;
+	my $i = 0;
+	/\A(Moose|Class..MOP|Test::Warnings|MooseX::Deprecated|Eval::Closure)\b/ && ++$Carp::Internal{$_}
+		while defined($_ = caller $i++);
 	
 	croak(sprintf EDEPRECATED, $name, $type)
 		if warnings::fatal_enabled("deprecated");
@@ -202,16 +202,9 @@ the accessor (reader) to obtain the object to delegate to. This could
 theoretically be changed, but I'm comfortable with the existing
 situation.
 
-In mutable classes, warnings issued from the constructor will appear
-to come from Moose's innards, and not from the constructor's real call
-site. This means that disabling them or fatalizing them with
-C<< no warnings >> or C<< use warnings FATAL >> will not work.
-You should always make classes immutable anyway.
-
-Warnings issued by the accessor (reader) during method delegation will
-similarly not be issued from the correct call site, affecting your
-ability to disable or fatalize them. Making the class immutable cannot
-fix this one I'm afraid.
+Warnings issued by the accessor (reader) during method delegation come
+from inside your class, and thus the caller cannot disable them or
+fatalize them.
 
 =head1 BUGS
 
