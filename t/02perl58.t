@@ -4,10 +4,9 @@
 
 =head1 PURPOSE
 
-Test that MooseX::Deprecated works.
+Test that MooseX::Deprecated kinda works on Perl 5.8.
 
-On Perl 5.8.x this test is skipped because it implements
-C<warnings::warnif> oddly.
+A less strict test!
 
 =head1 AUTHOR
 
@@ -58,8 +57,6 @@ use Test::Fatal;
 	};
 }
 
-BEGIN { $] >= 5.010 or plan skip_all => "Perl 5.10 required" };
-
 my $imm = '';
 
 sub w_qr {
@@ -95,13 +92,13 @@ with_immutable
 	);
 	
 	like(
-		warning { $g->_clear_feathers; no warnings; ok(!$g->has_feathers, "clearer works$imm") },
+		[warnings { $g->_clear_feathers; no warnings; ok(!$g->has_feathers, "clearer works$imm") }]->[0],
 		w_qr('_clear_feathers is a deprecated clearer', 93),
 		"warning when using clearer$imm",
 	);
 	
 	like(
-		warning { $g->_set_feathers('FeatherSet'->new); no warnings; ok($g->has_feathers, "writer works$imm") },
+		[warnings { $g->_set_feathers('FeatherSet'->new); no warnings; ok($g->has_feathers, "writer works$imm") }]->[0],
 		w_qr('_set_feathers is a deprecated writer', 99),
 		"warning when using writer$imm",
 	);
@@ -124,36 +121,6 @@ with_immutable
 		w_qr('talk is a deprecated method', 118),
 		"warning from deprecated method$imm",
 	);
-	
-	my @w_stuff = warnings {
-		no warnings "deprecated";
-		my $g2 = 'Goose'->new;
-		$g2->_set_feathers( $g->feathers );
-		$g2->talk;
-	};
-	
-	is_deeply(\@w_stuff, [], "warnings can be disabled$imm");
-	
-	my $e_construct;
-	warning {
-		$e_construct = exception {
-			use warnings FATAL => "deprecated";
-			'Goose'->new(feathers => 'FeatherSet'->new);
-		};
-	};
-	like($e_construct||'', w_qr('feathers is a deprecated argument', 136), "warning from constructor can be fatalized$imm");
-	
-	my $e_access = exception {
-		use warnings FATAL => "deprecated";
-		$g->feathers;
-	};
-	like($e_access, w_qr('feathers is a deprecated reader', 143), "warning from accessor can be fatalized$imm");
-	
-	my $e_method = exception {
-		use warnings FATAL => "deprecated";
-		$g->talk;
-	};
-	like($e_method, w_qr('talk is a deprecated method', 149), "warning from method can be fatalized$imm");
 	
 	$imm = " (immutable class)";
 } qw( FeatherSet Goose );
