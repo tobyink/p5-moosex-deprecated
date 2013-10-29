@@ -5,5 +5,10 @@
 `MooseX-Deprecated`
 	:test-requirement       [ :on "Test::More 0.96"^^:CpanId ];
 	:develop-recommendation [ :on "Dist::Inkt 0.001"^^:CpanId ];
+	:runtime-requirement    [ :on "MooseX::Role::Parameterized 1.00"^^:CpanId ];
+	:test-requirement       [ :on "Moose 2.0300"^^:CpanId ];
+	:test-requirement       [ :on "Test::Moose"^^:CpanId ];
+	:test-requirement       [ :on "Test::Warnings 0.005"^^:CpanId ];
+	:test-requirement       [ :on "Test::Fatal 0.007"^^:CpanId ];
 	.
 
