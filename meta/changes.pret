@@ -17,3 +17,12 @@
 		item "Make the undocumented E* functions handle the sprintf stuff within themselves."^^Change;
 	].
 
+`MooseX-Deprecated 0.004 cpan:TOBYINK`
+	issued  2013-10-29;
+	changeset [
+		item "Skip basic tests in Perl < 5.10; they're not going to work."^^Tests;
+		item "Include a cut-down test for Perl 5.8."^^Tests;
+		item "Note Perl 5.8 limitations regarding warnings::warnif()."^^Documentation;
+		item "Mention Moose::Deprecated in SEE ALSO."^^Documentation;
+	].
+
