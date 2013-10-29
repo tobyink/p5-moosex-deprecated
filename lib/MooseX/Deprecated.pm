@@ -107,6 +107,8 @@ __END__
 
 =encoding utf-8
 
+=for stopwords fatalize fatalizing
+
 =head1 NAME
 
 MooseX::Deprecated - mark attributes and methods as deprecated
