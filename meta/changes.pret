@@ -26,3 +26,9 @@
 		item "Mention Moose::Deprecated in SEE ALSO."^^Documentation;
 	].
 
+`MooseX-Deprecated 0.005 cpan:TOBYINK`
+	issued  2014-03-11;
+	changeset [
+		item "Use Devel::Callsite to warn only once per callsite."^^Change;
+	].
+

@@ -5,7 +5,7 @@ use warnings;
 package MooseX::Deprecated;
 
 our $AUTHORITY = 'cpan:TOBYINK';
-our $VERSION   = '0.004';
+our $VERSION   = '0.005';
 
 use Carp;
 use Devel::Callsite 0.08;
