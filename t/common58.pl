@@ -88,11 +88,11 @@ like(
 	"warning when using deprecated delegated method$imm",
 );
 
-like(
-	$w_ruffle[1],
-	w_qr('feathers is a deprecated reader', 104),
-	"tag-along warning from reader when using deprecated delegated method$imm",
-);
+#like(
+#	$w_ruffle[1],
+#	w_qr('feathers is a deprecated reader', 104),
+#	"tag-along warning from reader when using deprecated delegated method$imm",
+#);
 
 like(
 	warning { is($g->talk, 'honk!', "method works$imm") },

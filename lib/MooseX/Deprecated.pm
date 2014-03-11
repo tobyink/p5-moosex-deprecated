@@ -21,11 +21,6 @@ sub EDEPRECATED { sprintf '%s is a deprecated %s', @_ }
 sub ENOOP       { sprintf '%s with no list of attributes or methods', @_ }
 sub ENOATTR     { sprintf 'Attribute %s does not exist in %s so cannot be deprecated', @_ }
 
-# I don't like these.
-sub MAGIC_NUMBER_FOR_BEFORE ()          { 2 }
-sub MAGIC_NUMBER_FOR_IMMUTABLE_BUILD () { 3 }
-sub MAGIC_NUMBER_FOR_MUTABLE_BUILD ()   { 6 }
-
 parameter attributes => (
 	is      => 'ro',
 	isa     => 'ArrayRef[Str]',
@@ -41,14 +36,16 @@ parameter methods => (
 my %already;
 my $deprecated = sub
 {
-	my $site = shift;
 	my $type = shift;
 	my $name = shift;
 	
 	# Skip over any Moose internals
 	local %Carp::Internal = %Carp::Internal;
 	my $i = 0;
-	/\A(Moose|Class..MOP|Test::Warnings|MooseX::Deprecated|Eval::Closure)\b/ && ++$Carp::Internal{$_}
+	my $site;
+	/\A(Moose|Class..MOP|Test::Warnings|MooseX::Deprecated|Eval::Closure)\b/
+		? ++$Carp::Internal{$_}
+		: ($site ||= callsite($i-1))
 		while defined($_ = caller($i++));
 	
 	return if $already{$site}++;
@@ -82,7 +79,6 @@ role {
 			before $method_name => sub
 			{
 				unshift @_ => (
-					scalar(callsite(MAGIC_NUMBER_FOR_BEFORE)),
 					$method_type => $method_name,
 				);
 				goto $deprecated;
@@ -98,7 +94,6 @@ role {
 		{
 			$immutable = !!(ref($_[0])->meta->is_immutable) unless defined($immutable);
 			$deprecated->(
-				scalar(callsite($immutable ? MAGIC_NUMBER_FOR_IMMUTABLE_BUILD : MAGIC_NUMBER_FOR_MUTABLE_BUILD)),
 				argument => $_,
 				@_,
 			) if exists($_[1]{$_});
@@ -110,7 +105,6 @@ role {
 		before $method => sub
 		{
 			unshift @_ => (
-				scalar(callsite(MAGIC_NUMBER_FOR_BEFORE)),
 				method => $method,
 			);
 			goto $deprecated;
