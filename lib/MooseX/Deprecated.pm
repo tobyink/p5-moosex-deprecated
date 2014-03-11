@@ -8,6 +8,7 @@ our $AUTHORITY = 'cpan:TOBYINK';
 our $VERSION   = '0.004';
 
 use Carp;
+use Devel::Callsite 0.08;
 use MooseX::Role::Parameterized;
 
 our @CARP_NOT = qw(
@@ -19,6 +20,11 @@ our @CARP_NOT = qw(
 sub EDEPRECATED { sprintf '%s is a deprecated %s', @_ }
 sub ENOOP       { sprintf '%s with no list of attributes or methods', @_ }
 sub ENOATTR     { sprintf 'Attribute %s does not exist in %s so cannot be deprecated', @_ }
+
+# I don't like these.
+sub MAGIC_NUMBER_FOR_BEFORE ()          { 2 }
+sub MAGIC_NUMBER_FOR_IMMUTABLE_BUILD () { 3 }
+sub MAGIC_NUMBER_FOR_MUTABLE_BUILD ()   { 6 }
 
 parameter attributes => (
 	is      => 'ro',
@@ -35,6 +41,7 @@ parameter methods => (
 my %already;
 my $deprecated = sub
 {
+	my $site = shift;
 	my $type = shift;
 	my $name = shift;
 	
@@ -42,7 +49,9 @@ my $deprecated = sub
 	local %Carp::Internal = %Carp::Internal;
 	my $i = 0;
 	/\A(Moose|Class..MOP|Test::Warnings|MooseX::Deprecated|Eval::Closure)\b/ && ++$Carp::Internal{$_}
-		while defined($_ = caller $i++);
+		while defined($_ = caller($i++));
+	
+	return if $already{$site}++;
 	
 	warnings::warnif deprecated => EDEPRECATED($name, $type);
 };
@@ -72,7 +81,10 @@ role {
 			
 			before $method_name => sub
 			{
-				unshift @_, $method_type => $method_name;
+				unshift @_ => (
+					scalar(callsite(MAGIC_NUMBER_FOR_BEFORE)),
+					$method_type => $method_name,
+				);
 				goto $deprecated;
 			}
 		}
@@ -81,15 +93,26 @@ role {
 	method BUILD => sub { };
 	after BUILD => sub
 	{
-		exists($_[1]{$_}) && $deprecated->(argument => $_, @_)
-			for sort keys %init_args;
+		my $immutable;
+		for (sort keys %init_args)
+		{
+			$immutable = !!(ref($_[0])->meta->is_immutable) unless defined($immutable);
+			$deprecated->(
+				scalar(callsite($immutable ? MAGIC_NUMBER_FOR_IMMUTABLE_BUILD : MAGIC_NUMBER_FOR_MUTABLE_BUILD)),
+				argument => $_,
+				@_,
+			) if exists($_[1]{$_});
+		}
 	};
 	
 	for my $method (@methods)
 	{
 		before $method => sub
 		{
-			unshift @_, method => $method;
+			unshift @_ => (
+				scalar(callsite(MAGIC_NUMBER_FOR_BEFORE)),
+				method => $method,
+			);
 			goto $deprecated;
 		}
 	}
@@ -153,6 +176,8 @@ disabled using:
 Warnings can be upgraded to fatal errors with:
 
    use warnings FATAL => qw( deprecated );
+
+Warnings will only be issued once per call site.
 
 When consuming the role you I<must> pass either a list of attributes,
 or a list of methods, or both, as parameters to the role. If you forget
@@ -219,7 +244,8 @@ considered to be the caller.
 
 In the test suite I just skip the complex test that checks for this on
 Perl prior to 5.10, allowing you to install this module without a hitch
-on Perl 5.8.
+on Perl 5.8. B<< However, you are strongly discouraged from using this
+module with Perl 5.8. >>
 
 =head1 SEE ALSO
 
@@ -245,7 +271,7 @@ Toby Inkster E<lt>tobyink@cpan.orgE<gt>.
 
 =head1 COPYRIGHT AND LICENCE
 
-This software is copyright (c) 2013 by Toby Inkster.
+This software is copyright (c) 2013-2014 by Toby Inkster.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

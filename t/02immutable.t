@@ -4,7 +4,7 @@
 
 =head1 PURPOSE
 
-Test that MooseX::Deprecated works.
+Test that MooseX::Deprecated works with immutable classes.
 
 On Perl 5.8.x this test is skipped because it implements
 C<warnings::warnif> oddly.
@@ -26,5 +26,5 @@ the same terms as the Perl 5 programming language system itself.
 use strict;
 use warnings;
 use lib qw( t . );
-our $imm = '';
+our $imm = ' (immutable class)';
 require($] < 5.010 ? 'common58.pl' : 'common.pl');
